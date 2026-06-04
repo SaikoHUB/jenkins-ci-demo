@@ -13,16 +13,33 @@ pipeline {
                 echo "Clonage depuis ${env.GIT_URL}"
             }
         }
+
         stage('Build') {
             steps {
                 sh 'docker build -t ${IMAGE_NAME}:latest .'
             }
         }
+
+        stage('Scan Trivy') {
+            steps {
+                sh '''
+                    docker run --rm \
+                        -v /var/run/docker.sock:/var/run/docker.sock \
+                        aquasec/trivy:latest image \
+                        --exit-code 1 \
+                        --severity HIGH,CRITICAL \
+                        --no-progress \
+                        ${IMAGE_NAME}:latest
+                '''
+            }
+        }
+
         stage('Test') {
             steps {
                 sh 'docker run --rm ${IMAGE_NAME}:latest python -c "import flask; import prometheus_client; print(\'deps OK\')"'
             }
         }
+
         stage('Deploy') {
             steps {
                 sh '''
