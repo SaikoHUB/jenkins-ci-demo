@@ -8,7 +8,7 @@ REQUEST_COUNT = Counter('app_requests_total', 'Total requests', ['endpoint'])
 @app.route('/')
 def index():
     REQUEST_COUNT.labels(endpoint='/').inc()
-    raise Exception("Bug volontaire pour tester le rollback !")  # 💥
+    return 'Hello from Jenkins CI/CD!'
 
 @app.route('/metrics')
 def metrics():
